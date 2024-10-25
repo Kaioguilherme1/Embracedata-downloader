@@ -98,12 +98,12 @@ jobs:
           path: ./artifacts/linux
           # github-token: ${{ secrets.TOKEN }}  # Removido
 
-      - name: Download macOS Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: Embracedata_Downloader-macos-latest
-          path: ./artifacts/macos
-          # github-token: ${{ secrets.TOKEN }}  # Removido
+#      - name: Download macOS Artifact
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: Embracedata_Downloader-macos-latest
+#          path: ./artifacts/macos
+#          # github-token: ${{ secrets.TOKEN }}  # Removido
 
       - name: Download Windows Artifact
         uses: actions/download-artifact@v3
@@ -133,15 +133,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
 
-      - name: Upload Release Assets (macOS)
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/macos/Embracedata_Downloader.app
-          asset_name: Embracedata_Downloader-macos
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
+#      - name: Upload Release Assets (macOS)
+#        uses: actions/upload-release-asset@v1
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: ./artifacts/macos/Embracedata_Downloader.app
+#          asset_name: Embracedata_Downloader-macos
+#          asset_content_type: application/octet-stream
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
 
       - name: Upload Release Assets (Windows)
         uses: actions/upload-release-asset@v1
