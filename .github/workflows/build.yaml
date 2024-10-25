@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -23,23 +23,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Altere para a versão de Python desejada
+          python-version: '3.12'  # Altere para a versão de Python desejada
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller requests toml
 
-
       - name: Build with PyInstaller (no-console)
         run: |
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            pyinstaller --onefile --noconsole --icon=./icons/icon.icns Embracedata_Downloader.py
-          elif [[ "$RUNNER_OS" == "Windows" ]]; then
-            pyinstaller --onefile --noconsole --icon=./icons/icon.ico Embracedata_Downloader.py
-          else
-            pyinstaller --onefile --noconsole --icon=./icons/icon.png Embracedata_Downloader.py  # ícone para Linux
-          fi
+          pyinstaller --onefile --noconsole --icon=./icons/icon.icns Embracedata_Downloader.py
+        shell: bash
 
       - name: Upload Artifact (Binary)
         uses: actions/upload-artifact@v3
@@ -47,8 +41,35 @@ jobs:
           name: Embracedata_Downloader-${{ matrix.os }}
           path: dist/Embracedata_Downloader*
 
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'  # Altere para a versão de Python desejada
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller requests toml
+
+      - name: Build with PyInstaller (no-console)
+        run: |
+          pyinstaller --onefile --noconsole --icon=./icons/icon.ico Embracedata_Downloader.py
+
+      - name: Upload Artifact (Binary)
+        uses: actions/upload-artifact@v3
+        with:
+          name: Embracedata_Downloader-windows
+          path: dist/Embracedata_Downloader.exe
+
   release:
-    needs: build
+    needs: [build, build-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -75,13 +96,17 @@ jobs:
         with:
           name: Embracedata_Downloader-ubuntu-latest
           path: ./artifacts/linux
-      - uses: actions/download-artifact@v3
+
+      - name: Download Artifacts (macOS)
+        uses: actions/download-artifact@v3
         with:
           name: Embracedata_Downloader-macos-latest
           path: ./artifacts/macos
-      - uses: actions/download-artifact@v3
+
+      - name: Download Artifacts (Windows)
+        uses: actions/download-artifact@v3
         with:
-          name: Embracedata_Downloader-windows-latest
+          name: Embracedata_Downloader-windows
           path: ./artifacts/windows
 
       - name: Create GitHub Release
