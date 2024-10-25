@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Embracedata-Downloader"
-version = "0.1.2"
+version = "0.1.3"
 description = "Enbracedata-downloader é uma ferramenta que facilita o download automatizado de dados da plataforma Embracedata do INPE, permitindo acesso rápido a informações de clima espacial e geofísicas para pesquisa e análise."
 authors = ["kaio Guilherme  <kaioguilherme444@gmail.com>"]
 license = "MIT"
