@@ -11,7 +11,7 @@ build_exe_options = {
 # Definindo a base como "Win64GUI" para aplicações com interface gráfica (sem console)
 base = None
 if sys.platform == "win32":
-    base = "Win64GUI"
+    base = "Win32GUI"
 
 # Setup para Windows 64 bits
 setup(

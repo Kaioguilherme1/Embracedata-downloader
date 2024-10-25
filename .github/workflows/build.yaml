@@ -1,4 +1,4 @@
-name: Build executables
+name: Build Executables
 
 on:
   push:
@@ -18,6 +18,15 @@ jobs:
         run: pip install cx-freeze requests
       - name: Build Windows Executable
         run: python config/setup_windows.py build
+      - name: Rename Windows Executable
+        run: |
+          mkdir -p dist
+          mv build/exe.win64-*/Embracedata-Downloader.exe dist/Embracedata-Downloader-x64.exe
+      - name: Upload Windows Executable to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Embracedata-Downloader-x64.exe
+          path: dist/Embracedata-Downloader-x64.exe
 
   build-linux:
     runs-on: ubuntu-latest
@@ -35,7 +44,18 @@ jobs:
       - name: Build Linux Executable
         run: python config/setup_linux.py build
       - name: Create AppImage
-        run: ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable build/linux/Embracedata-Downloader
+        run: |
+          mkdir -p AppDir
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable build/linux/Embracedata-Downloader
+      - name: Rename Linux AppImage
+        run: |
+          mkdir -p dist
+          mv Embracedata-Downloader.AppImage dist/Embracedata-Downloader-x64.AppImage
+      - name: Upload Linux AppImage to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Embracedata-Downloader-x64.AppImage
+          path: dist/Embracedata-Downloader-x64.AppImage
 
   build-macos:
     runs-on: macos-latest
@@ -49,3 +69,41 @@ jobs:
         run: pip install cx-freeze requests
       - name: Build macOS Executable
         run: python config/setup_macos.py build
+      - name: Rename macOS Executable
+        run: |
+          mkdir -p dist
+          mv build/exe.macos-*/Embracedata-Downloader dist/Embracedata-Downloader-x64-macOS
+      - name: Upload macOS Executable to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Embracedata-Downloader-x64-macOS
+          path: dist/Embracedata-Downloader-x64-macOS
+
+  upload-to-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Embracedata-Downloader-x64.exe
+          path: dist/
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Embracedata-Downloader-x64.AppImage
+          path: dist/
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Embracedata-Downloader-x64-macOS
+          path: dist/
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/Embracedata-Downloader-x64.exe
+            dist/Embracedata-Downloader-x64.AppImage
+            dist/Embracedata-Downloader-x64-macOS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
