@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install cx-freeze
+        run: pip install cx-freeze requests
       - name: Build Windows Executable
         run: python config/setup_windows.py build
 
@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
-          pip install cx-freeze
+          pip install cx-freeze requests
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
       - name: Build Linux Executable
@@ -46,6 +46,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install cx-freeze
+        run: pip install cx-freeze requests
       - name: Build macOS Executable
         run: python config/setup_macos.py build
