@@ -33,8 +33,13 @@ jobs:
 
       - name: Build with PyInstaller (no-console)
         run: |
-          pyinstaller --onefile --noconsole --icon=icon.icns Embracedata_Downloader.py
-        shell: bash
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            pyinstaller --onefile --noconsole --icon=./icons/icon.icns Embracedata_Downloader.py
+          elif [[ "$RUNNER_OS" == "Windows" ]]; then
+            pyinstaller --onefile --noconsole --icon=./icons/icon.ico Embracedata_Downloader.py
+          else
+            pyinstaller --onefile --noconsole --icon=./icons/icon.png Embracedata_Downloader.py  # ícone para Linux
+          fi
 
       - name: Upload Artifact (Binary)
         uses: actions/upload-artifact@v3
