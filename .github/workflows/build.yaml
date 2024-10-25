@@ -38,14 +38,14 @@ jobs:
 
       - name: Build with PyInstaller (no-console)
         run: |
-          pyinstaller --onefile --noconsole embracedata_downloader.py
+          pyinstaller --onefile --noconsole Embracedata_Downloader.py
         shell: bash
 
       - name: Upload Artifact (Binary)
         uses: actions/upload-artifact@v3
         with:
-          name: embracedata_downloader-${{ matrix.os }}
-          path: dist/embracedata_downloader*
+          name: Embracedata_Downloader-${{ matrix.os }}
+          path: dist/Embracedata_Downloader*
 
   release:
     needs: build
@@ -57,15 +57,15 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v3
         with:
-          name: embracedata_downloader-ubuntu-latest
+          name: Embracedata_Downloader-ubuntu-latest
           path: ./artifacts/linux
       - uses: actions/download-artifact@v3
         with:
-          name: embracedata_downloader-macos-latest
+          name: Embracedata_Downloader-macos-latest
           path: ./artifacts/macos
       - uses: actions/download-artifact@v3
         with:
-          name: embracedata_downloader-windows-latest
+          name: Embracedata_Downloader-windows-latest
           path: ./artifacts/windows
 
       - name: Create GitHub Release
@@ -83,22 +83,22 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/linux/embracedata_downloader
-          asset_name: embracedata_downloader-linux
+          asset_path: ./artifacts/linux/Embracedata_Downloader
+          asset_name: Embracedata_Downloader-linux
           asset_content_type: application/octet-stream
 
       - name: Upload Release Assets (macOS)
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/macos/embracedata_downloader
-          asset_name: embracedata_downloader-macos
+          asset_path: ./artifacts/macos/Embracedata_Downloader
+          asset_name: Embracedata_Downloader-macos
           asset_content_type: application/octet-stream
 
       - name: Upload Release Assets (Windows)
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/windows/embracedata_downloader.exe
-          asset_name: embracedata_downloader-windows.exe
+          asset_path: ./artifacts/windows/Embracedata_Downloader.exe
+          asset_name: Embracedata_Downloader-windows.exe
           asset_content_type: application/octet-stream
