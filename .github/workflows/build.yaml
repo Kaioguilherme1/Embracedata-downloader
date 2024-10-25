@@ -1,0 +1,51 @@
+name: Build executables
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install cx-freeze
+      - name: Build Windows Executable
+        run: python setup_windows.py build
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install cx-freeze
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+      - name: Build Linux Executable
+        run: python setup_linux.py build
+      - name: Create AppImage
+        run: ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable build/linux/Embracedata-Downloader
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install cx-freeze
+      - name: Build macOS Executable
+        run: python setup_macos.py build
