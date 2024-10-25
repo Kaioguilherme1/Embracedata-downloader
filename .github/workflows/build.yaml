@@ -37,17 +37,7 @@ jobs:
         
       - name: Make the generated Linux app executable
         run: |
-          if [ -f dist/Embracedata_Downloader ]; then
-            chmod +x dist/Embracedata_Downloader
-          fi
-        shell: bash
-
-      - name: Make the generated macOS app executable
-        run: |
-          if [ -d dist/Embracedata_Downloader.app ]; then
-            chmod +x dist/Embracedata_Downloader.app
-            chmod +x dist/Embracedata_Downloader.app/Contents/MacOS/Embracedata_Downloader
-          fi
+           hmod +x dist/Embracedata_Downloader
         shell: bash
       
       - name: Upload Artifact (Binary)
@@ -116,7 +106,7 @@ jobs:
       - name: Download macOS Artifact
         uses: actions/download-artifact@v3
         with:
-          name: Embracedata_Downloader-macos-latest.app
+          name: Embracedata_Downloader-macos-latest
           path: ./artifacts/macos
 
 
@@ -152,7 +142,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/macos/Embracedata_Downloader.app
+          asset_path: ./artifacts/macos/Embracedata_Downloader
           asset_name: Embracedata_Downloader-macos
           asset_content_type: application/octet-stream
         env:
