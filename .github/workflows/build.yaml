@@ -37,7 +37,7 @@ jobs:
         
       - name: Make the generated Linux app executable
         run: |
-           hmod +x dist/Embracedata_Downloader
+           chmod +x dist/Embracedata_Downloader
         shell: bash
       
       - name: Upload Artifact (Binary)
@@ -117,8 +117,21 @@ jobs:
           path: ./artifacts/windows
           # github-token: ${{ secrets.TOKEN }}  # Removido
 
+      - name: Check if version exists
+        id: check_version
+        run: |
+            VERSION_TAG="v${{ env.VERSION }}"
+            TAGS=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/tags")
+            if echo "$TAGS" | grep -q "\"name\": \"$VERSION_TAG\""; then
+              echo "Version $VERSION_TAG already exists. Skipping release."
+              echo "release_exists=true" >> $GITHUB_ENV
+            else
+              echo "release_exists=false" >> $GITHUB_ENV
+            fi
+  
       - name: Create GitHub Release
         id: create_release
+        if: env.release_exists == 'false'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token adicionado aqui
