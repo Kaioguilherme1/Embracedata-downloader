@@ -69,7 +69,7 @@ jobs:
           path: dist/Embracedata_Downloader.exe
 
   release:
-    needs: [build, build-windows]
+    needs: [ build, build-windows ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -113,7 +113,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token adicionado aqui
         with:
           tag_name: v${{ env.VERSION }}
           release_name: Release v${{ env.VERSION }}
