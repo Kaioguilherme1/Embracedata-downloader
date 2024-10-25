@@ -41,6 +41,7 @@ jobs:
           pip install cx-freeze requests
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
+          sudo apt-get install -y libfuse2
       - name: Build Linux Executable
         run: python config/setup_linux.py build
       - name: Extract AppImage
@@ -71,7 +72,9 @@ jobs:
       - name: Install dependencies
         run: pip install cx-freeze requests
       - name: Build macOS Executable
-        run: python config/setup_macos.py build
+        run: |
+          python config/setup_macos.py build
+          ls -R build  # Para verificar a estrutura e localizar o .app gerado
       - name: Rename macOS Executable
         run: |
           mkdir -p dist
