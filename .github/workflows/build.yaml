@@ -87,22 +87,24 @@ jobs:
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['tool']['poetry']['version'])")
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
-      - name: Generate Changelog
-        id: changelog
-        run: |
-          changelog=$(git log -1 --pretty=format:"* %s" --no-merges)
-          echo "changelog=${changelog}" >> $GITHUB_ENV
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Embracedata-Downloader-win64.exe
+          path: ./build
+      - uses: actions/download-artifact@v3
+        with:
+          name: Embracedata-Downloader
+          path: ./build
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}
           release_name: "Release ${{ env.VERSION }}"
           body: |
-            ## Changelog
             
-            
-            ### Download
-            - [Windows x64](./build/Embracedata-Downloader-win64.exe)
-            - [macOS](./build/Embracedata-Downloader)
+          files: |
+            ./build/Embracedata-Downloader-win64.exe
+            ./build/Embracedata-Downloader
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
