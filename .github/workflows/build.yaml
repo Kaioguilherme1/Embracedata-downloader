@@ -38,7 +38,7 @@ jobs:
 
       - name: Build with PyInstaller (no-console)
         run: |
-          pyinstaller --onefile --noconsole Embracedata_Downloader.py
+          pyinstaller --onefile --noconsole --icon=icon.icns Embracedata_Downloader.py
         shell: bash
 
       - name: Upload Artifact (Binary)
