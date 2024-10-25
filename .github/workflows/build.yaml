@@ -34,7 +34,22 @@ jobs:
         run: |
           pyinstaller --onefile --noconsole --icon=./icons/icon.icns Embracedata_Downloader.py
         shell: bash
+        
+      - name: Make the generated Linux app executable
+        run: |
+          if [ -f dist/Embracedata_Downloader ]; then
+            chmod +x dist/Embracedata_Downloader
+          fi
+        shell: bash
 
+      - name: Make the generated macOS app executable
+        run: |
+          if [ -d dist/Embracedata_Downloader.app ]; then
+            chmod +x dist/Embracedata_Downloader.app
+            chmod +x dist/Embracedata_Downloader.app/Contents/MacOS/Embracedata_Downloader
+          fi
+        shell: bash
+      
       - name: Upload Artifact (Binary)
         uses: actions/upload-artifact@v3
         with:
@@ -96,14 +111,14 @@ jobs:
         with:
           name: Embracedata_Downloader-ubuntu-latest
           path: ./artifacts/linux
-          # github-token: ${{ secrets.TOKEN }}  # Removido
 
-#      - name: Download macOS Artifact
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: Embracedata_Downloader-macos-latest
-#          path: ./artifacts/macos
-#          # github-token: ${{ secrets.TOKEN }}  # Removido
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Embracedata_Downloader-macos-latest.app
+          path: ./artifacts/macos
+
 
       - name: Download Windows Artifact
         uses: actions/download-artifact@v3
@@ -133,15 +148,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
 
-#      - name: Upload Release Assets (macOS)
-#        uses: actions/upload-release-asset@v1
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: ./artifacts/macos/Embracedata_Downloader.app
-#          asset_name: Embracedata_Downloader-macos
-#          asset_content_type: application/octet-stream
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
+      - name: Upload Release Assets (macOS)
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/macos/Embracedata_Downloader.app
+          asset_name: Embracedata_Downloader-macos
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
 
       - name: Upload Release Assets (Windows)
         uses: actions/upload-release-asset@v1
