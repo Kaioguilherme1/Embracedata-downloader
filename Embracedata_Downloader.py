@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+#version 0.1.1
+
 import logging
 import os
 import threading
