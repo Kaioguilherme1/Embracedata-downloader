@@ -23,7 +23,7 @@ setup(
         Executable(
             "src/Embracedata_Downloader.py",  # Caminho para o arquivo principal
             base=base,
-            target_name="Embracedata-Downloader.exe",  # Gera um .exe de 64 bits
+            target_name="Embracedata-Downloader-win64.exe",  # Gera um .exe de 64 bits
         )
     ],
 )

@@ -18,42 +18,38 @@ jobs:
         run: pip install cx-freeze requests
       - name: Build Windows Executable
         run: python config/setup_windows.py build
-      - name: Move Windows Executable to Dist
-        run: |
-          mkdir -p dist
-          mv build/exe.win64-*/Embracedata-Downloader.exe dist/Embracedata-Downloader-x64.exe
       - name: Upload Windows Executable to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Embracedata-Downloader-x64.exe
-          path: dist/Embracedata-Downloader-x64.exe
+          name: Embracedata-Downloader-win64.exe
+          path: build/Embracedata-Downloader-win64.exe
 
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.12"
-      - name: Install dependencies
-        run: |
-          pip install cx-freeze requests
-          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage
-          sudo apt-get install -y libfuse2
-      - name: Build Linux Executable
-        run: python config/setup_linux.py build
-      - name: Create AppImage
-        run: |
-          mkdir -p dist
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable build/linux/Embracedata-Downloader
-          mv Embracedata-Downloader-x64.AppImage dist/
-      - name: Upload Linux AppImage to Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Embracedata-Downloader-x64.AppImage
-          path: dist/Embracedata-Downloader-x64.AppImage
+#  build-linux:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set up Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: "3.12"
+#      - name: Install dependencies
+#        run: |
+#          pip install cx-freeze requests
+#          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+#          chmod +x linuxdeploy-x86_64.AppImage
+#          sudo apt-get install -y libfuse2
+#      - name: Build Linux Executable
+#        run: python config/setup_linux.py build
+#      - name: Create AppImage
+#        run: |
+#          mkdir -p dist
+#          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --executable build/linux/Embracedata-Downloader
+#          mv Embracedata-Downloader-x64.AppImage dist/
+#      - name: Upload Linux AppImage to Artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: Embracedata-Downloader-x64.AppImage
+#          path: build/Embracedata-Downloader-x64.AppImage
 
   build-macos:
     runs-on: macos-latest
@@ -67,19 +63,15 @@ jobs:
         run: pip install cx-freeze requests
       - name: Build macOS Executable
         run: python config/setup_macos.py build
-      - name: Move macOS Executable to Dist
-        run: |
-          mkdir -p dist
-          mv build/Embracedata-Downloader.app dist/
       - name: Upload macOS Executable to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Embracedata-Downloader.app
-          path: dist/Embracedata-Downloader.app
+          name: Embracedata-Downloader
+          path: build/Embracedata-Downloader
 
   release:
     runs-on: ubuntu-latest
-    needs: [build-windows, build-linux, build-macos]
+    needs: [build-windows, build-macos]
     steps:
       - uses: actions/checkout@v2
       - name: Get version
@@ -102,8 +94,7 @@ jobs:
             ${{ env.changelog }}
 
             ### Download
-            - [Windows x64](./dist/Embracedata-Downloader-x64.exe)
-            - [Linux x64 AppImage](./dist/Embracedata-Downloader-x64.AppImage)
-            - [macOS](./dist/Embracedata-Downloader.app)
+            - [Windows x64](./build/Embracedata-Downloader-win64.exe)
+            - [macOS](./build/Embracedata-Downloader)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
