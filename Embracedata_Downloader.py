@@ -24,6 +24,16 @@ cancel_download = False  # Variável para controle de cancelamento
 # Cidades disponíveis
 cidades = ['BLJ03', 'BVJ03', 'CAJ2M', 'CGK21', 'FZA0M', 'SAA0K', 'SMK29']
 
+# Tipos disponiveis
+tipos_disponiveis = ['SAO', 'RSF', 'DFT', 'SKY', 'DVL']
+
+tabela_tipo = {
+    'SAO': ['000'],
+    'RSF': ['000'],
+    'DFT': ['430', '700'],
+    'SKY': ['430', '700'],
+    'DVL': ['430', '700'],
+}
 # Função para baixar arquivos
 def download_files():
     global save_directory, cancel_download  # Acessa a variável global
@@ -38,17 +48,19 @@ def download_files():
 
     os.makedirs(save_directory, exist_ok=True)
 
-    tipos_disponiveis = ['SAO', 'RSF']
-    tipos_a_baixar = (
-        [tipo_arquivo_combobox.get()]
-        if tipo_arquivo_combobox.get() != 'Todos'
-        else tipos_disponiveis
-    )
+    # Coletar tipos de arquivo selecionados ao iniciar o download
+    tipos_a_baixar = [
+        formato for formato, var in zip(tipos_disponiveis, tipo_vars) if var.get()
+    ]
+    if not tipos_a_baixar:
+        messagebox.showwarning('Aviso', 'Nenhum tipo de arquivo selecionado.')
+        return
 
     # Obtém as cidades selecionadas
     cidades_selecionadas = [
-        cidade for cidade, var in zip(cidades, vars_check) if var.get()
+        cidade for cidade, var in zip(cidades, cidade_vars) if var.get()
     ]
+    print("Cidades selecionadas:", cidades_selecionadas)
     if not cidades_selecionadas:
         messagebox.showwarning('Aviso', 'Nenhuma cidade selecionada.')
         return
@@ -135,8 +147,10 @@ def perform_download(
 
                             numero = f'{a}{b}{c}'
                             for tipo in tipos_a_baixar:
-                                filename = f'{cidade}_{ano}{dia_str}{numero}000.{tipo}'
-                                URL = f'https://embracedata.inpe.br/ionosonde/{cidade}/{ano}/{dia_str}/{filename}'
+                                for formato in tabela_tipo[tipo]:
+                                    print(formato)
+                                    filename = f'{cidade}_{ano}{dia_str}{numero}{formato}.{tipo}'
+                                    URL = f'https://embracedata.inpe.br/ionosonde/{cidade}/{ano}/{dia_str}/{filename}'
 
                                 try:
                                     logging.info(f'Tentando baixar: {URL}')
@@ -208,88 +222,84 @@ def cancel_download_action():
     global cancel_download
     cancel_download = True  # Define a variável de cancelamento
 
-
-# Criando a janela principal
+# Janela principal
 root = tk.Tk()
-root.title('INPE Data Downloader')
+root.title('INPE Data Downloader 2.0')
+root.geometry("570x800")
+root.resizable(False, False)
 
-# Configuração do layout
-frame = ttk.Frame(root, padding='10')
-frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+# Configuração do layout principal
+main_frame = ttk.Frame(root, padding="10 10 10 10")
+main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+main_frame.columnconfigure(0, weight=1)
+main_frame.rowconfigure(0, weight=1)
 
-# Configurar colunas para serem responsivas
-frame.columnconfigure(0, weight=1)
-frame.columnconfigure(1, weight=1)
-frame.columnconfigure(2, weight=1)
-frame.columnconfigure(3, weight=1)
+# Subframes para melhor organização
+frame_inputs = ttk.LabelFrame(main_frame, text="Parâmetros de Data", padding="10 10 10 10")
+frame_inputs.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-# Configurar linhas para serem responsivas
-for i in range(11):  # Adicionando linhas para que todos os widgets se expandam
-    frame.rowconfigure(i, weight=1)
+frame_types = ttk.LabelFrame(main_frame, text="Tipos de Arquivo", padding="10 10 10 10")
+frame_types.grid(row=1, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-# Entrada para o ano de início
-ttk.Label(frame, text='Ano de Início:').grid(column=0, row=0, sticky=tk.W)
-ano_inicio_entry = ttk.Entry(frame, width=5)
-ano_inicio_entry.grid(column=1, row=0, sticky=(tk.W, tk.E))
+frame_cities = ttk.LabelFrame(main_frame, text="Cidades", padding="10 10 10 10")
+frame_cities.grid(row=2, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-ttk.Label(frame, text='Ano de Fim:').grid(column=2, row=0, sticky=tk.W)
-ano_fim_entry = ttk.Entry(frame, width=5)
-ano_fim_entry.grid(column=3, row=0, sticky=(tk.W, tk.E))
+frame_controls = ttk.Frame(main_frame, padding="10 10 10 10")
+frame_controls.grid(row=3, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-# Entrada para o dia de início
-ttk.Label(frame, text='Dia de Início (1-365):').grid(
-    column=0, row=1, sticky=tk.W
-)
-dia_inicio_entry = ttk.Entry(frame, width=5)
-dia_inicio_entry.grid(column=1, row=1, sticky=(tk.W, tk.E))
+frame_logs = ttk.LabelFrame(main_frame, text="Logs", padding="10 10 10 10")
+frame_logs.grid(row=4, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-ttk.Label(frame, text='Dia de Fim (1-365):').grid(column=2, row=1, sticky=tk.W)
-dia_fim_entry = ttk.Entry(frame, width=5)
-dia_fim_entry.grid(column=3, row=1, sticky=(tk.W, tk.E))
+# Parâmetros de entrada
+ttk.Label(frame_inputs, text='Ano de Início:').grid(column=0, row=0, sticky=tk.W)
+ano_inicio_entry = ttk.Entry(frame_inputs, width=10)
+ano_inicio_entry.grid(column=1, row=0, sticky=tk.W)
 
-# Combobox para tipos de arquivo
-ttk.Label(frame, text='Tipo de Arquivo:').grid(column=0, row=2, sticky=tk.W)
-tipo_arquivo_combobox = ttk.Combobox(
-    frame, values=['Todos', 'SAO', 'RSF'], state='readonly'
-)
-tipo_arquivo_combobox.grid(column=1, row=2, columnspan=3, sticky=(tk.W, tk.E))
-tipo_arquivo_combobox.current(0)
+ttk.Label(frame_inputs, text='Ano de Fim:').grid(column=2, row=0, sticky=tk.W)
+ano_fim_entry = ttk.Entry(frame_inputs, width=10)
+ano_fim_entry.grid(column=3, row=0, sticky=tk.W)
 
-# Checkbuttons para cidades
-vars_check = []
+ttk.Label(frame_inputs, text='Dia de Início (1-365):').grid(column=0, row=1, sticky=tk.W)
+dia_inicio_entry = ttk.Entry(frame_inputs, width=10)
+dia_inicio_entry.grid(column=1, row=1, sticky=tk.W)
+
+ttk.Label(frame_inputs, text='Dia de Fim (1-365):').grid(column=2, row=1, sticky=tk.W)
+dia_fim_entry = ttk.Entry(frame_inputs, width=10)
+dia_fim_entry.grid(column=3, row=1, sticky=tk.W)
+
+# Tipos de Arquivo
+tipo_vars = []
+for i, tipo in enumerate(tipos_disponiveis):
+    var = tk.BooleanVar(value=False)
+    check = ttk.Checkbutton(frame_types, text=tipo, variable=var)
+    check.grid(column=i % 3, row=i // 3, sticky=tk.W, padx=5, pady=5)
+    tipo_vars.append(var)
+
+# Cidades
+cidade_vars = []
 for i, cidade in enumerate(cidades):
     var = tk.BooleanVar(value=False)
-    check = ttk.Checkbutton(frame, text=cidade, variable=var)
-    check.grid(column=i % 3, row=3 + (i // 3), sticky=tk.W)  # Ajusta a posição
-    vars_check.append(var)
+    check = ttk.Checkbutton(frame_cities, text=cidade, variable=var)
+    check.grid(column=i % 3, row=i // 3, sticky=tk.W, padx=5, pady=5)
+    cidade_vars.append(var)
 
-# Botão para selecionar diretório
-ttk.Button(frame, text='Selecionar Diretório', command=select_directory).grid(
-    column=0, row=6, columnspan=2, sticky=(tk.W, tk.E)
-)
+print(cidade_vars)
+# Controles
+ttk.Button(frame_controls, text='Selecionar Diretório', command=select_directory).grid(column=0, row=0, sticky=tk.W, padx=5, pady=5)
+ttk.Button(frame_controls, text='Iniciar Download', command=download_files).grid(column=1, row=0, sticky=tk.E, padx=5, pady=5)
+ttk.Button(frame_controls, text='Cancelar Download', command=cancel_download_action).grid(column=2, row=0, sticky=tk.E, padx=5, pady=5)
 
-# Label para mostrar o diretório selecionado
-save_directory_label = ttk.Label(frame, text=save_directory)
-save_directory_label.grid(column=0, row=7, columnspan=4, sticky=(tk.W, tk.E))
+save_directory_label = ttk.Label(frame_controls, text=save_directory)
+save_directory_label.grid(column=0, row=1, columnspan=3, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-# Botão para iniciar o download
-ttk.Button(frame, text='Iniciar Download', command=download_files).grid(
-    column=0, row=8, columnspan=2, sticky=(tk.W, tk.E)
-)
+# Logs
+log_display = scrolledtext.ScrolledText(frame_logs, width=60, height=15)
+log_display.grid(column=0, row=0, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-# Botão para cancelar o download
-ttk.Button(
-    frame, text='Cancelar Download', command=cancel_download_action
-).grid(column=2, row=8, columnspan=2, sticky=(tk.W, tk.E))
-
-# Barra de progresso
+# Barra de Progresso
 progress_var = tk.IntVar()
-progress_bar = ttk.Progressbar(frame, variable=progress_var, maximum=100)
-progress_bar.grid(column=0, row=9, columnspan=4, sticky=(tk.W, tk.E))
+progress_bar = ttk.Progressbar(frame_controls, variable=progress_var, maximum=100)
+progress_bar.grid(column=0, row=2, columnspan=3, sticky=(tk.W, tk.E), padx=5, pady=5)
 
-# Área de texto para logs
-log_display = scrolledtext.ScrolledText(frame, width=60, height=10)
-log_display.grid(column=0, row=10, columnspan=4, sticky=(tk.W, tk.E))
-
-# Inicia a aplicação
+# Inicializar janela
 root.mainloop()
