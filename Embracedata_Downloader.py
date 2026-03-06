@@ -22,7 +22,7 @@ save_directory = 'Dados'  # Diretório padrão
 cancel_download = False  # Variável para controle de cancelamento
 
 # Cidades disponíveis
-cidades = ['BLJ03', 'BVJ03', 'CAJ2M', 'CGK21', 'FZA0M', 'SAA0K', 'SMK29']
+cidades = ['BLJ03', 'BVJ03', 'CAJ2M', 'CGK21', 'FZA0M', 'SAA0K','SAJ03', 'SMK29']
 
 # Tipos disponiveis
 tipos_disponiveis = ['SAO', 'RSF', 'DFT', 'SKY', 'DVL']
@@ -224,7 +224,7 @@ def cancel_download_action():
 
 # Janela principal
 root = tk.Tk()
-root.title('INPE Data Downloader 2.0')
+root.title('INPE Data Downloader 2.1')
 root.geometry("570x800")
 root.resizable(False, False)
 
