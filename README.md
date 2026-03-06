@@ -186,7 +186,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 **Kaio Guilherme**
 - Email: kaioguilherme444@gmail.com
-- GitHub: [@kaio-guilherme](https://github.com/kaio-guilherme)
+- GitHub: [@kaio-guilherme](https://github.com/Kaioguilherme1)
 
 ## 🙏 Agradecimentos
 
