@@ -18,12 +18,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'  # Altere para a versão de Python desejada
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -41,7 +41,7 @@ jobs:
         shell: bash
       
       - name: Upload Artifact (Binary)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Embracedata_Downloader-${{ matrix.os }}
           path: dist/Embracedata_Downloader*
@@ -51,12 +51,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'  # Altere para a versão de Python desejada
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -68,7 +68,7 @@ jobs:
           pyinstaller --onefile --noconsole --icon=./icons/icon.ico Embracedata_Downloader.py
 
       - name: Upload Artifact (Binary)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Embracedata_Downloader-windows
           path: dist/Embracedata_Downloader.exe
@@ -78,12 +78,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'  # ou a versão que você estiver usando
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -97,25 +97,24 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Download Linux Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Embracedata_Downloader-ubuntu-latest
           path: ./artifacts/linux
 
 
       - name: Download macOS Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Embracedata_Downloader-macos-latest
           path: ./artifacts/macos
 
 
       - name: Download Windows Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Embracedata_Downloader-windows
           path: ./artifacts/windows
-          # github-token: ${{ secrets.TOKEN }}  # Removido
 
       - name: Check if version exists
         id: check_version
@@ -130,43 +129,16 @@ jobs:
             fi
   
       - name: Create GitHub Release
-        id: create_release
         if: env.release_exists == 'false'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token adicionado aqui
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
-          release_name: Release v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
           draft: false
           prerelease: false
-
-      - name: Upload Release Assets (Linux)
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/linux/Embracedata_Downloader
-          asset_name: Embracedata_Downloader-linux
-          asset_content_type: application/octet-stream
+          files: |
+            ./artifacts/linux/Embracedata_Downloader
+            ./artifacts/macos/Embracedata_Downloader
+            ./artifacts/windows/Embracedata_Downloader.exe
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
-
-      - name: Upload Release Assets (macOS)
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/macos/Embracedata_Downloader
-          asset_name: Embracedata_Downloader-macos
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
-
-      - name: Upload Release Assets (Windows)
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/windows/Embracedata_Downloader.exe
-          asset_name: Embracedata_Downloader-windows.exe
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}  # Token para upload
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
