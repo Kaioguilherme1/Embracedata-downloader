@@ -74,6 +74,7 @@ jobs:
           path: dist/Embracedata_Downloader.exe
 
   release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [ build, build-windows ]
     runs-on: ubuntu-latest
     steps:
@@ -102,13 +103,11 @@ jobs:
           name: Embracedata_Downloader-ubuntu-latest
           path: ./artifacts/linux
 
-
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
         with:
           name: Embracedata_Downloader-macos-latest
           path: ./artifacts/macos
-
 
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
@@ -116,20 +115,7 @@ jobs:
           name: Embracedata_Downloader-windows
           path: ./artifacts/windows
 
-      - name: Check if version exists
-        id: check_version
-        run: |
-            VERSION_TAG="v${{ env.VERSION }}"
-            TAGS=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/tags")
-            if echo "$TAGS" | grep -q "\"name\": \"$VERSION_TAG\""; then
-              echo "Version $VERSION_TAG already exists. Skipping release."
-              echo "release_exists=true" >> $GITHUB_ENV
-            else
-              echo "release_exists=false" >> $GITHUB_ENV
-            fi
-  
       - name: Create GitHub Release
-        if: env.release_exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
