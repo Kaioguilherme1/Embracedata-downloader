@@ -1,145 +1,153 @@
-name: PyInstaller Build and Release
+name: Build e Release
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags:
+      - 'v*'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
 
-  build:
+  # ====================================================
+  # Build para Linux e macOS (bash)
+  # ====================================================
+  build-unix:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            artifact_name: Embracedata_Downloader-linux
+          - os: macos-latest
+            artifact_name: Embracedata_Downloader-macos
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Instalar dependências (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y python3-tk
+
+      - name: Instalar pacotes Python
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller requests toml
+          pip install pyinstaller customtkinter requests
 
-      - name: Build with PyInstaller
+      - name: Build com PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --icon=./icons/icon.icns Embracedata_Downloader.py
+          pyinstaller --noconfirm --onefile --windowed \
+            --name "${{ matrix.artifact_name }}" \
+            --add-data "engine.py:." \
+            main.py
 
-      - name: Rename binary (Linux/macOS)
-        run: |
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            mv dist/Embracedata_Downloader dist/Embracedata_Downloader-linux
-            chmod +x dist/Embracedata_Downloader-linux
-          else
-            mv dist/Embracedata_Downloader dist/Embracedata_Downloader-macos
-            chmod +x dist/Embracedata_Downloader-macos
-          fi
+      - name: Marcar como executável
+        run: chmod +x dist/${{ matrix.artifact_name }}
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Embracedata_Downloader-${{ matrix.os }}
-          path: dist/Embracedata_Downloader*
+          name: ${{ matrix.artifact_name }}
+          path: dist/${{ matrix.artifact_name }}
 
+  # ====================================================
+  # Build para Windows (PowerShell)
+  # ====================================================
   build-windows:
-
+    name: Build Windows
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Instalar pacotes Python
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller requests toml
+          pip install pyinstaller customtkinter requests
 
-      - name: Build with PyInstaller
+      - name: Build com PyInstaller
         run: |
-          pyinstaller --onefile --noconsole --icon=./icons/icon.ico Embracedata_Downloader.py
+          pyinstaller --noconfirm --onefile --windowed `
+            --name "Embracedata_Downloader-windows" `
+            --add-data "engine.py;." `
+            --icon "icons/icon.ico" `
+            main.py
 
-      - name: Rename binary
-        run: |
-          ren dist\Embracedata_Downloader.exe Embracedata_Downloader-windows.exe
-
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Embracedata_Downloader-windows
           path: dist/Embracedata_Downloader-windows.exe
 
+  # ====================================================
+  # Publicar Release no GitHub com os 3 binários
+  # ====================================================
   release:
-
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    needs: [build, build-windows]
-
+    name: Criar Release GitHub
+    needs: [build-unix, build-windows]
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install toml
+      - name: Extrair versão do pyproject.toml
         run: |
-          python -m pip install --upgrade pip
-          pip install toml
-
-      - name: Extract version from pyproject.toml
-        run: |
-          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['tool']['poetry']['version'])")
+          VERSION=$(python -c "
+          import re
+          content = open('pyproject.toml').read()
+          m = re.search(r'version = \"(.+?)\"', content)
+          print(m.group(1))
+          ")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Download Linux Artifact
+      - name: Download todos os artefatos
         uses: actions/download-artifact@v4
         with:
-          name: Embracedata_Downloader-ubuntu-latest
-          path: artifacts/linux
+          path: artifacts/
 
-      - name: Download macOS Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Embracedata_Downloader-macos-latest
-          path: artifacts/macos
+      - name: Listar artefatos (debug)
+        run: find artifacts/ -type f
 
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Embracedata_Downloader-windows
-          path: artifacts/windows
-
-      - name: Create GitHub Release
+      - name: Criar GitHub Release com binários
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.VERSION }}
-          name: Release v${{ env.VERSION }}
+          tag_name: ${{ github.ref_name }}
+          name: "Release v${{ env.VERSION }}"
+          body: |
+            ## Embracedata Downloader v${{ env.VERSION }}
+
+            ### Novidades desta versão
+            - Motor de download inteligente (Web Scraping do índice do INPE — zero erros 404)
+            - Multithreading adaptativo baseado nos núcleos do processador
+            - Interface redesenhada para pesquisadores e leigos
+            - Data Final se auto-ajusta ao mudar a Data Inicial
+
+            ### Como usar
+            1. Baixe o arquivo correspondente ao seu sistema operacional abaixo
+            2. **Windows**: clique duas vezes no `.exe`
+            3. **macOS**: clique duas vezes no binário (se bloquear, vá em Ajustes → Segurança e clique em "Abrir mesmo assim")
+            4. **Linux**: `chmod +x Embracedata_Downloader-linux && ./Embracedata_Downloader-linux`
           draft: false
           prerelease: false
           files: |
-            artifacts/linux/Embracedata_Downloader-linux
-            artifacts/macos/Embracedata_Downloader-macos
-            artifacts/windows/Embracedata_Downloader-windows.exe
+            artifacts/Embracedata_Downloader-linux/Embracedata_Downloader-linux
+            artifacts/Embracedata_Downloader-macos/Embracedata_Downloader-macos
+            artifacts/Embracedata_Downloader-windows/Embracedata_Downloader-windows.exe
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
