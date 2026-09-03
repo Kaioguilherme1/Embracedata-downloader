@@ -1,60 +1,43 @@
-# 🛰️ Embracedata Downloader
+# Embracedata Downloader 📥
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Build Status](https://github.com/kaio-guilherme/Embracedata-downloader/workflows/PyInstaller%20Build%20and%20Release/badge.svg)](https://github.com/kaio-guilherme/Embracedata-downloader/actions)
+![Screenshot da Interface](screenshot.png)
 
-Embracedata Downloader é uma ferramenta **desktop** que facilita o download automatizado de dados ionosféricos da plataforma [Embracedata do INPE](https://embracedata.inpe.br), permitindo acesso rápido e organizado a informações de clima espacial e geofísicas para pesquisa e análise científica.
+O **Embracedata Downloader** é uma ferramenta gráfica que facilita o download automatizado de dados espaciais (clima espacial e geofísicos) da plataforma Embracedata do INPE. Com uma interface estilo Apple (simples, descritiva e acessível), a ferramenta foi desenhada especialmente para pesquisadores, doutores e leigos.
 
-![Screenshot](https://img.shields.io/badge/Version-0.2.1-green.svg)
+## 🚀 Novidades da Versão 2.0
+- **Motor Web Scraping:** Chega de erros 404! O sistema agora vasculha o diretório do INPE antes de tentar baixar os arquivos, descobrindo com 100% de precisão o que existe no servidor.
+- **Multithreading Inteligente:** A velocidade foi multiplicada. O motor detecta o número de núcleos do seu processador e abre até dezenas de conexões em paralelo (Threads I/O bound).
+- **Interface Descomplicada:** Layout totalmente remodelado. Datas se auto-ajustam, cidades e tipos estão detalhados em linguagem clara.
 
-## ✨ Características
+## 📦 Como Baixar e Executar (Windows, Mac, Linux)
+Você **não precisa instalar o Python** se não for desenvolvedor. O sistema compila automaticamente executáveis práticos "Point and Click":
 
-- 🖥️ **Interface Gráfica Intuitiva** - Interface desktop amigável desenvolvida com Tkinter
-- 📊 **Download em Massa** - Baixe múltiplos arquivos de diferentes períodos simultaneamente
-- 🏙️ **Múltiplas Estações** - Suporte para 8 cidades brasileiras de monitoramento ionosférico
-- 📁 **Tipos de Dados Variados** - SAO, RSF, DFT, SKY, DVL
-- 📝 **Sistema de Logs** - Acompanhamento detalhado de todos os downloads
-- ⏸️ **Cancelamento Flexível** - Interrompa downloads a qualquer momento
-- 💾 **Organização Automática** - Arquivos salvos de forma estruturada
-- 🔄 **Multi-threaded** - Downloads executados em threads separadas sem travar a interface
+1. Acesse a aba [Actions/Releases](https://github.com/KaioGuilherme/Embracedata-downloader/actions) deste repositório no GitHub.
+2. Baixe o pacote para o seu sistema:
+   - `Windows 11` (.exe)
+   - `macOS 15+` (.app)
+   - `Ubuntu 22+` (Binary)
+3. Descompacte e clique duas vezes para abrir.
 
-## 📋 Pré-requisitos
+---
 
-- Python 3.12 ou superior
-- Sistema Operacional: Windows, macOS ou Linux
+## 🛠 Para Desenvolvedores
 
-## 🚀 Instalação
+### Pré-requisitos
+* **Python 3.12+**
+* [Poetry](https://python-poetry.org/)
 
-### Opção 1: Executável Pré-compilado (Recomendado)
-
-Baixe a versão compilada para seu sistema operacional na [página de releases](https://github.com/kaio-guilherme/Embracedata-downloader/releases):
-
-- **Windows**: `Embracedata_Downloader-windows.exe`
-- **macOS**: `Embracedata_Downloader-macos`
-- **Linux**: `Embracedata_Downloader-linux`
-
-### Opção 2: Executar do Código Fonte
-
-1. Clone o repositório:
+### Instalação e Execução local
 ```bash
-git clone https://github.com/kaio-guilherme/Embracedata-downloader.git
+git clone https://github.com/KaioGuilherme/Embracedata-downloader.git
 cd Embracedata-downloader
-```
-
-2. Instale as dependências usando Poetry:
-```bash
 poetry install
+poetry run python main.py
 ```
 
-Ou usando pip:
+### Build Manual via PyInstaller
 ```bash
-pip install requests
-```
-
-3. Execute o aplicativo:
-```bash
-python Embracedata_Downloader.py
+poetry run pyinstaller --noconfirm --onedir --windowed --name "Embracedata Downloader" main.py
 ```
 
 ## 📖 Como Usar
