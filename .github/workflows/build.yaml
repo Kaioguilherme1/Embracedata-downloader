@@ -12,18 +12,11 @@ permissions:
 jobs:
 
   # ====================================================
-  # Build para Linux e macOS (bash)
+  # Build para Linux (bash)
   # ====================================================
-  build-unix:
-    name: Build ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-22.04
-            artifact_name: Embracedata_Downloader-linux
-          - os: macos-latest
-            artifact_name: Embracedata_Downloader-macos
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -35,7 +28,6 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependências (Linux)
-        if: runner.os == 'Linux'
         run: sudo apt-get install -y python3-tk
 
       - name: Instalar pacotes Python
@@ -46,18 +38,79 @@ jobs:
       - name: Build com PyInstaller
         run: |
           pyinstaller --noconfirm --onefile --windowed \
-            --name "${{ matrix.artifact_name }}" \
+            --name "Embracedata_Downloader-linux" \
             --add-data "engine.py:." \
+            --collect-all customtkinter \
             main.py
 
       - name: Marcar como executável
-        run: chmod +x dist/${{ matrix.artifact_name }}
+        run: chmod +x dist/Embracedata_Downloader-linux
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.artifact_name }}
+          name: Embracedata_Downloader-linux
+          path: dist/Embracedata_Downloader-linux
+
+  # ====================================================
+  # Build para macOS (DMG e ZIP com .app)
+  # ====================================================
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar pacotes Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller customtkinter requests
+
+      - name: Build com PyInstaller (.app bundle)
+        run: |
+          pyinstaller --noconfirm --onedir --windowed \
+            --name "Embracedata Downloader" \
+            --icon "icons/icon.icns" \
+            --osx-bundle-identifier "br.inpe.embracedata.downloader" \
+            --add-data "engine.py:." \
+            --collect-all customtkinter \
+            main.py
+
+      - name: Assinatura Ad-hoc do App Bundle
+        run: |
+          codesign --force --deep --sign - "dist/Embracedata Downloader.app"
+
+      - name: Empacotar DMG e ZIP para Distribuição
+        run: |
+          # 1. Empacotar ZIP preservando permissões e links simbólicos
+          ditto -c -k --keepParent "dist/Embracedata Downloader.app" "dist/Embracedata_Downloader-macos.zip"
+
+          # 2. Criar DMG instalável com atalho para /Applications
+          mkdir -p dist/dmg_staging
+          cp -R "dist/Embracedata Downloader.app" dist/dmg_staging/
+          ln -s /Applications dist/dmg_staging/Applications
+          hdiutil create -volname "Embracedata Downloader" \
+            -srcfolder dist/dmg_staging \
+            -ov -format UDZO "dist/Embracedata_Downloader-macos.dmg"
+
+      - name: Upload artifact DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: Embracedata_Downloader-macos-dmg
+          path: dist/Embracedata_Downloader-macos.dmg
+
+      - name: Upload artifact ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Embracedata_Downloader-macos-zip
+          path: dist/Embracedata_Downloader-macos.zip
 
   # ====================================================
   # Build para Windows (PowerShell)
@@ -85,6 +138,7 @@ jobs:
           pyinstaller --noconfirm --onefile --windowed `
             --name "Embracedata_Downloader-windows" `
             --add-data "engine.py;." `
+            --collect-all customtkinter `
             --icon "icons/icon.ico" `
             main.py
 
@@ -95,11 +149,11 @@ jobs:
           path: dist/Embracedata_Downloader-windows.exe
 
   # ====================================================
-  # Publicar Release no GitHub com os 3 binários
+  # Publicar Release no GitHub com os 3 sistemas
   # ====================================================
   release:
     name: Criar Release GitHub
-    needs: [build-unix, build-windows]
+    needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
 
     steps:
@@ -139,15 +193,20 @@ jobs:
             - Data Final se auto-ajusta ao mudar a Data Inicial
 
             ### Como usar
-            1. Baixe o arquivo correspondente ao seu sistema operacional abaixo
-            2. **Windows**: clique duas vezes no `.exe`
-            3. **macOS**: clique duas vezes no binário (se bloquear, vá em Ajustes → Segurança e clique em "Abrir mesmo assim")
-            4. **Linux**: `chmod +x Embracedata_Downloader-linux && ./Embracedata_Downloader-linux`
+            1. Baixe o arquivo correspondente ao seu sistema operacional abaixo:
+            2. **macOS**: Baixe o arquivo `.dmg` (ou `.zip`). Abra o `.dmg` e arraste para Aplicativos (ou clique duas vezes no app para abrir).
+               *Aviso no macOS (Gatekeeper)*: Como o binário é open source e não possui certificado pago da Apple, na primeira execução clique com o **botão direito (ou Control + Clique)** sobre o app e escolha **Abrir** (ou acesse *Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim*).
+            3. **Windows**: Baixe o executável `.exe` e clique duas vezes para abrir.
+            4. **Linux**: Baixe o binário e execute via terminal:
+               ```bash
+               chmod +x Embracedata_Downloader-linux && ./Embracedata_Downloader-linux
+               ```
           draft: false
           prerelease: false
           files: |
             artifacts/Embracedata_Downloader-linux/Embracedata_Downloader-linux
-            artifacts/Embracedata_Downloader-macos/Embracedata_Downloader-macos
+            artifacts/Embracedata_Downloader-macos-dmg/Embracedata_Downloader-macos.dmg
+            artifacts/Embracedata_Downloader-macos-zip/Embracedata_Downloader-macos.zip
             artifacts/Embracedata_Downloader-windows/Embracedata_Downloader-windows.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -10,14 +10,14 @@ O **Embracedata Downloader** é uma ferramenta gráfica que facilita o download 
 - **Interface Descomplicada:** Layout totalmente remodelado. Datas se auto-ajustam, cidades e tipos estão detalhados em linguagem clara.
 
 ## 📦 Como Baixar e Executar (Windows, Mac, Linux)
-Você **não precisa instalar o Python** se não for desenvolvedor. O sistema compila automaticamente executáveis práticos "Point and Click":
+Você **não precisa instalar o Python** se não for desenvolvedor. O repositório compila automaticamente executáveis prontos para uso:
 
-1. Acesse a aba [Actions/Releases](https://github.com/KaioGuilherme/Embracedata-downloader/actions) deste repositório no GitHub.
-2. Baixe o pacote para o seu sistema:
-   - `Windows 11` (.exe)
-   - `macOS 15+` (.app)
-   - `Ubuntu 22+` (Binary)
-3. Descompacte e clique duas vezes para abrir.
+1. Acesse a aba [Releases](https://github.com/KaioGuilherme/Embracedata-downloader/releases) deste repositório no GitHub.
+2. Baixe o pacote para o seu sistema operacional:
+   - **macOS (Apple Silicon / M-series)**: Baixe o arquivo `.dmg` (ou `.zip`). Abra o `.dmg` e arraste para a pasta Aplicativos (ou execute direto).
+     > **Nota de Segurança no macOS (Gatekeeper)**: Na primeira vez que abrir, caso apareça aviso de desenvolvedor não verificado, clique com o **botão direito (Control + Clique)** sobre o app, selecione **Abrir** e confirme, ou acesse **Ajustes do Sistema → Privacidade e Segurança** e clique em **Abrir Mesmo Assim**.
+   - **Windows 10/11**: Baixe o `.exe` e dê duplo clique para abrir.
+   - **Linux**: Baixe o binário e dê permissão de execução: `chmod +x Embracedata_Downloader-linux && ./Embracedata_Downloader-linux`.
 
 ---
 
@@ -36,8 +36,20 @@ poetry run python main.py
 ```
 
 ### Build Manual via PyInstaller
+
+#### macOS (.app bundle com ícone e temas):
 ```bash
-poetry run pyinstaller --noconfirm --onedir --windowed --name "Embracedata Downloader" main.py
+poetry run pyinstaller --noconfirm --onedir --windowed \
+  --name "Embracedata Downloader" \
+  --icon "icons/icon.icns" \
+  --osx-bundle-identifier "br.inpe.embracedata.downloader" \
+  --collect-all customtkinter \
+  main.py
+```
+
+#### Windows (.exe):
+```bash
+poetry run pyinstaller --noconfirm --onefile --windowed --name "Embracedata_Downloader-windows" --icon "icons/icon.ico" --collect-all customtkinter main.py
 ```
 
 ## 📖 Como Usar
@@ -86,19 +98,19 @@ poetry run pyinstaller --noconfirm --onedir --windowed --name "Embracedata Downl
 
 ```
 Embracedata-downloader/
-├── Embracedata_Downloader.py  # Aplicação principal
-├── pyproject.toml             # Configuração do Poetry
-├── poetry.lock                # Lock file de dependências
+├── main.py                    # Interface gráfica CustomTkinter
+├── engine.py                  # Motor de scraping e download concorrente
+├── pyproject.toml             # Configuração do Poetry e dependências
+├── poetry.lock                # Lockfile de dependências
 ├── LICENSE                    # Licença MIT
-├── README.md                  # Este arquivo
-├── Inpe_download.log          # Arquivo de log (gerado)
+├── README.md                  # Documentação do projeto
 ├── icons/                     # Ícones da aplicação
 │   ├── icon.icns             # Ícone macOS
 │   ├── icon.ico              # Ícone Windows
 │   └── icon.png              # Ícone genérico
 └── .github/
     └── workflows/
-        └── build.yaml         # CI/CD GitHub Actions
+        └── build.yaml         # Pipeline CI/CD GitHub Actions (Linux, macOS, Windows)
 ```
 
 ## 🛠️ Desenvolvimento
@@ -114,25 +126,6 @@ poetry run task test
 
 # Verificar formatação de código
 poetry run task lint
-
-# Criar commit seguindo convenções
-poetry run task commit
-```
-
-### Compilar Executável
-
-```bash
-# Instalar PyInstaller
-pip install pyinstaller
-
-# Compilar (Windows)
-pyinstaller --onefile --noconsole --icon=./icons/icon.ico Embracedata_Downloader.py
-
-# Compilar (macOS)
-pyinstaller --onefile --noconsole --icon=./icons/icon.icns Embracedata_Downloader.py
-
-# Compilar (Linux)
-pyinstaller --onefile --noconsole Embracedata_Downloader.py
 ```
 
 ## 🔍 Logs
